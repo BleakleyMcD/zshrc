@@ -17,6 +17,8 @@ if [ -f ~/.zshrc_functions ]; then
 source ~/.zshrc_functions
 fi
 
+autoload -Uz compinit && compinit
+
 echo " "
 echo $fg[yellow]${bold}Welcome to ${MYNAME}!
 echo $fg[blue]The Home of 'TBM Archiving, Conservation & Restoration'
