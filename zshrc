@@ -31,7 +31,7 @@ PROMPT='%F{yellow}%B%d%f
 
 export LESS='-MN'
 
-export EDITOR="code -w"
+export EDITOR="nano"
 export VISUAL="$EDITOR"
 
 # history modifications
