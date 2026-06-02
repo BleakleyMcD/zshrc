@@ -1,64 +1,62 @@
-## Installation instructions for custom NMAAHC zshrc and associated files
+# NMAAHC custom zshrc and associated files
 
-1. Create the following directories:
+A small, self-contained zsh setup. Four files, symlinked into your home directory:
 
-    `$HOME/github` & `$HOME/github/nmaahc` 
+| repo file         | symlinked to            | purpose                                  |
+|-------------------|-------------------------|------------------------------------------|
+| `zprofile`        | `~/.zprofile`           | `PATH` / Homebrew, for login shells      |
+| `zshrc`           | `~/.zshrc`              | prompt, history, sources the two below   |
+| `zshrc_alias`     | `~/.zshrc_alias`        | aliases                                  |
+| `zshrc_functions` | `~/.zshrc_functions`    | functions                                |
 
-     -  easy one liner in terminal: 
-        `mkdir -p $HOME/github/nmaahc`
+`bootstrap.sh` creates the symlinks for you.
 
+## Install
 
-2. Go to https://github.com/NMAAHC/zshrc and fork that repo into your own github account
+1. **Confirm zsh is your default shell.**
+   - Run `echo $0` — it should print `-zsh`.
+   - If not: `chsh -s /bin/zsh`, then open a new terminal and check again.
 
+2. **Fork** https://github.com/NMAAHC/zshrc into your own GitHub account.
 
-3. cd into `$HOME/github/nmaahc` and, from your own github account repo, clone the repo you just forked: 
-    - `git clone https://github.com/[yourGithubname]/zshrc`
+3. **Clone your fork.** It can live anywhere; the convention is
+   `$HOME/github/<your-github-username>`:
 
-
-4.  Check to see that zsh is your default shell:
-     - type `echo $0` in the terminal, the result should say `-zsh`
-     - if it does not, type `cat /etc/shells` and look for the zsh shell - it will be `/bin/zsh`
-     - type `chsh -s /bin/zsh` in the terminal, it will ask for you password
-     - restart the termianl and type `echo $0` and it should display `-zsh`
-
-
-5.  Open `~/.zprofile` in an editor
-
-    - (If you don't have a `.zprofile` file, simply create one by typing in terminal: `touch ~/.zprofile`)
-
-
-6. past the following into the .zprofile:
-
-
-   ```
-    export PATH="/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
-
-    # create symlink so that .zshrc .zshrc_alias .zshrc_functions are 
-    # linked to your zshrc, zshrc_alias and zshrc_functions files in your local github repo
-    ln -sfn $HOME/github/nmaahc/zshrc/zshrc $HOME/.zshrc
-    ln -sfn $HOME/github/nmaahc/zshrc/zshrc_alias $HOME/.zshrc_alias
-    ln -sfn $HOME/github/nmaahc/zshrc/zshrc_functions $HOME/.zshrc_functions
+   ```sh
+   mkdir -p "$HOME/github/<your-github-username>"
+   cd "$HOME/github/<your-github-username>"
+   git clone https://github.com/<your-github-username>/zshrc
+   cd zshrc
    ```
 
-- NOTE: This presumes a folder named "nmaahc". One could, of course, clone this repo to a directory of one's choosing and change `$HOME/github/nmaahc/` to the path of the directory.
+4. **Run the bootstrap script:**
 
-    - ex. If you create a folder called `myrepo` on desktop, then the path in your `.zprofile` file should be: `$HOME/Desktop/myrepo/`
-    
+   ```sh
+   ./bootstrap.sh
+   ```
 
-7. Restart your CLI and type `echo $PATH`
-    - the output should be  `/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin`
+   It symlinks the four files above into `$HOME`. If you already have any of
+   them as real files, they're backed up to `*.bak` first. The script locates
+   the repo on its own, so the clone path doesn't matter.
 
-8. Now everything should work. You will now have all of the alias and funcions in the zshrc_alias and zshrc_functions files at your disposal
-    - example: 
-        - typing `ll` in the terminal will alias to `ls -lahG` 
-        - typing `treeL` in the terminal will alias to `tree -RapugD --si --du`
-        - typing `rsyncDAMS` will call the funciton `rsync -avvPhi --no-p --stats "${@}"`
-    - for more examples look at the zshrc_alias and zshrc_functions files. You can also add you own alias or functions!
+5. **Open a new terminal** (or run `exec zsh -l`). Done.
 
-Your terminal will now look like this, but with `medialab` replaced by your user name:
+## Verify
 
-![this is what your terminal will look like!](https://raw.githubusercontent.com/NMAAHC/zshrc/main/terminal.png)
+- `echo $PATH` includes `/opt/homebrew/bin` (Apple Silicon) or `/usr/local/bin` (Intel).
+- `ls -lahG ~` shows the four symlinks pointing back into your repo:
 
-If you are having issues type `ls -lahG ~` and check to see that the symlinks for the zsh files have been created:
+![what the zsh symlinks should look like](https://raw.githubusercontent.com/NMAAHC/zshrc/main/zsh_symlinks.png)
 
-![this is what your the zsh symlinks shoudl look like!](https://raw.githubusercontent.com/NMAAHC/zshrc/main/zsh_symlinks.png)
+## Using it
+
+A few examples — see `zshrc_alias` and `zshrc_functions` for the full list, and
+add your own there:
+
+- `ll`          → `command ls -lahG`
+- `treeL`       → `tree -RapugD --si --du`
+- `rsyncDAMS …` → `rsync -avvPhi --no-p --stats …`
+
+Your terminal will look like this (with your own user name):
+
+![what your terminal will look like](https://raw.githubusercontent.com/NMAAHC/zshrc/main/terminal.png)
