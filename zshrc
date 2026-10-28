@@ -9,6 +9,11 @@ autoload -U colors
 colors
 bold=$(tput bold)
 
+# user-local binaries (Claude Code installs its launcher to ~/.local/bin).
+# Kept in zshrc, not zprofile, so it also applies to non-login shells such as
+# the VSCodium/VS Code integrated terminal.
+export PATH="$HOME/.local/bin:$PATH"
+
 if [ -f ~/.zshrc_alias ]; then
 source ~/.zshrc_alias
 fi
