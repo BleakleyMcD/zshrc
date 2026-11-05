@@ -9,6 +9,11 @@ autoload -U colors
 colors
 bold=$(tput bold)
 
+# Keep PATH free of repeats. zshrc adds folders to PATH, so every shell started
+# from another shell (e.g. a VSCodium terminal) would otherwise add them again.
+# Both names are needed: with only `path`, `export PATH=...` lines still repeat.
+typeset -U path PATH
+
 if [ -f ~/.zshrc_alias ]; then
 source ~/.zshrc_alias
 fi
@@ -36,34 +41,34 @@ export VISUAL="$EDITOR"
 
 # history modifications
 export HISTFILE=~/.zsh_history
+# zsh can only save what it holds in memory, so SAVEHIST shouldn't be larger than HISTSIZE
 export HISTSIZE=50000
-export SAVEHIST=100000
+export SAVEHIST=50000
 setopt EXTENDED_HISTORY          # timestamp each entry
 setopt SHARE_HISTORY             # flush+reload every prompt so concurrent shells share history
 setopt HIST_IGNORE_DUPS          # skip duplicate consecutive commands
 setopt HIST_IGNORE_SPACE         # skip commands starting with a space
 setopt HIST_REDUCE_BLANKS        # trim extra whitespace
 setopt HIST_VERIFY               # show expanded !! before running
-export HISTORY_IGNORE="(history|pwd|exit|df|ls|ls -la|ll)"
+export HISTORY_IGNORE="(history|h|hh|hhh|pwd|exit|df|ls|ls -la|ll)"
 
 setopt extended_glob
 setopt INTERACTIVE_COMMENTS      # treat # as a comment in typed/pasted commands, like bash
 
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/homebrew/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/opt/homebrew/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/opt/homebrew/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/opt/homebrew/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+# conda, if Anaconda or Miniconda is installed in one of the usual places; otherwise nothing.
+# This replaces the block that `conda init` writes. Don't run `conda init zsh`: it would write
+# its own block back into this file (through the ~/.zshrc link), so conda would be set up twice.
+for _conda in /opt/homebrew/anaconda3 /usr/local/anaconda3 "$HOME/anaconda3" "$HOME/miniconda3"; do
+	if [ -x "$_conda/bin/conda" ]; then
+		eval "$("$_conda/bin/conda" shell.zsh hook 2>/dev/null)"
+		break
+	fi
+done
+unset _conda
 
-export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
+# Homebrew's Ruby, and the commands its gems install (e.g. jekyll), ahead of macOS's own Ruby.
+# The gems folder is named after Ruby's version (4.0.0, ...), so pick the newest one instead of
+# hard-coding it. (N) leaves out folders that don't exist, so without Homebrew Ruby nothing is added.
+path=(${HOMEBREW_PREFIX:-/opt/homebrew}/opt/ruby/bin(N) ${HOMEBREW_PREFIX:-/opt/homebrew}/lib/ruby/gems/*/bin(Nn[-1]) $path)
 [ -f ~/github/jpc/aspace_jpc_av/jpc-shell-hint.zsh ] && source ~/github/jpc/aspace_jpc_av/jpc-shell-hint.zsh

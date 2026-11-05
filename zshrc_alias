@@ -4,7 +4,21 @@ alias ll='command ls -lahG'
 alias ls='ls -1'
 alias home='cd ~'
 alias up='cd ..'
-alias h='history'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias lt='command ls -lht'
+alias lS='command ls -lhS'
+alias dus='du -sh * | sort -h'
+alias h='history -25'
+alias hh='history -50'
+alias hhh='history -100'
+
+# the shell itself
+alias path='print -l $path'
+alias reload='exec zsh'
+# opens the repo ~/.zshrc links to, wherever it was cloned
+alias zshconfig='code "${${:-$HOME/.zshrc}:A:h}"'
+alias localip='ipconfig getifaddr en0'
 
 # command option aliases
 alias df='df -h'
@@ -13,12 +27,17 @@ alias mkdir='mkdir -p'
 alias diffy='diff -y --suppress-common-lines --width=250'
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
-alias brewUp='brew update && brew upgrade && brew doctor && brew cleanup'
-alias treeL='tree -RapugD --si --du'
+# doctor exits with an error whenever it has warnings, so cleanup is joined with ; not &&
+alias brewUp='brew update && brew upgrade; brew doctor; brew cleanup'
+alias nmaahcmm='brew reinstall nmaahcmm'
+# no -R: tree is already recursive, and with -L it would write a 00Tree.html into every folder
+alias treeL='tree -apugD --si --du'
 alias ga="git add"
 alias gaa="git add --all"
 alias gc="git commit"
 alias gca="git commit --all"
 alias gst="git status"
+alias gd="git diff"
+alias glog="git log --oneline --graph --decorate"
 alias text='open -a textedit'
 alias code='open -a VSCodium'

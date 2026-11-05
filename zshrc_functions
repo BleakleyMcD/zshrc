@@ -1,44 +1,59 @@
 # functions
 
-# brew reinstall nmaahcmm
-function nmaahcmm () {
-	brew reinstall nmaahcmm
-}
-
-# brew reinstall zshrc
-function nmaahczshrc () {
-	brew reinstall zshrc
-}
-
-# make directories named after files in the current dir
-function makedirfile () {
-	for file in *.*; do
-		mkdir -p "${file%.*}"
-	done
-}
+# The rsync functions print the total transfer time when they finish, also if you stop
+# them with Ctrl-C. Format is h:mm:ss.ss, with zero hours/minutes left off (e.g. 1:02.05).
+# They use --progress rather than -P: -P adds --partial, which leaves a cut-off file
+# under its real name at the destination when a copy is interrupted.
+# caffeinate -i keeps the Mac from falling asleep while the copy runs (it can still sleep
+# if someone chooses Sleep or closes a laptop's lid); rsync's exit code passes through it.
 
 # rsync transfer for DAMS uploads
 function rsyncDAMS () {
-	rsync -avvPhi --no-p --stats "${@}"
+	local TIMEFMT='Transfer time: %*E'
+	time caffeinate -i rsync -avvhi --progress --no-p --stats "${@}"
 }
 
 # general rsync transfer
 function rsyncT () {
-	rsync -avvPhi --stats "${@}"
+	local TIMEFMT='Transfer time: %*E'
+	time caffeinate -i rsync -avvhi --progress --stats "${@}"
 }
 
 # general rsync transfer with deletion of source files
 function rsyncD () {
-	rsync -avvPhi --remove-source-files --stats "${@}"
+	local TIMEFMT='Transfer time: %*E'
+	time caffeinate -i rsync -avvhi --progress --remove-source-files --stats "${@}"
 }
 
-# remove hidden files/dirs from a location (does not delete the location itself)
+# find files and folders by part of their name, here and in every folder below
+# Upper/lower case doesn't matter; searches however deep. A second argument searches there instead.
+#   ff mov             ff 2018_37 /Volumes/archive
+function ff () {
+	if [ -z "${1}" ] ; then
+		print "usage: ff <part of a name> [folder]"
+		return 1
+	fi
+	find "${2:-.}" -iname "*${1}*"
+}
+
+# share this folder as a web page on the network until you press Ctrl-C
+# Anyone on the network can browse and download its files meanwhile. Optional port (default 8000): serve 9000
+function serve () {
+	local port="${1:-8000}"
+	print "Sharing ${PWD}"
+	print "Open http://$(ipconfig getifaddr en0 2>/dev/null || print localhost):${port}/ (Ctrl-C to stop)"
+	python3 -m http.server "${port}"
+}
+
+# remove hidden files and folders inside a folder
+# (the folder itself stays, even when its own name starts with a dot)
 function removehidden () {
 	if [ -z "${1}" ] ; then
 		cowsay "no argument provided. tootles."
-	else
-		find "${1}" -name '.?*' -prune -exec rm -rf {} +
+	elif find "${1}" -mindepth 1 -name '.?*' -prune -exec rm -rf {} + ; then
 		cowsay "hidden files removed. tootles."
+	else
+		cowsay "something went wrong. tootles."
 	fi
 }
 
@@ -46,13 +61,23 @@ function removehidden () {
 function sortk2 () {
 	if [ -z "${1}" ]; then
 		cowsay "no argument provided. tootles."
-	else
-		sort -k 2 -o "${1}" "${1}"
+	elif sort -k 2 -o "${1}" "${1}" ; then
 		cowsay "file sorting is done. tootles."
+	else
+		cowsay "sorting failed. tootles."
 	fi
 }
 
-function shortinfo () {
-	mediainfo --Inform="General;FileName=%FileNameExtension%,FileSize=%FileSize%,Duration(ms),%Duration%\n" "${@}"
-	mediainfo --Inform="Video;Width=%Width%,Height=%Height%,Codec=%CodecID%\n" "${@}"
+# list all the aliases and functions in these files
+# Aliases show what they run; functions show the first line of the comment above them,
+# so keep that first line a short description when adding a function.
+function cheat () {
+	local name
+	print -P "%BAliases%b"
+	for name in ${(f)"$(sed -nE 's/^alias ([^=]+)=.*/\1/p' ~/.zshrc_alias)"}; do
+		printf '  %-13s %s\n' "${name}" "${aliases[$name]}"
+	done
+	print -P "\n%BFunctions%b"
+	awk '/^#/ { if (!c) d = $0; c = 1; next } { c = 0 }
+	     /^function / { sub(/^#[ \t]*/, "", d); printf "  %-13s %s\n", $2, d; d = "" }' ~/.zshrc_functions
 }
